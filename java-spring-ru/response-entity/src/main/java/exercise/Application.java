@@ -1,5 +1,6 @@
 package exercise;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,20 +36,25 @@ public class Application {
     public ResponseEntity<List<Post>> getPostsWithParams(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer limit) {
-        var result = posts.stream().skip((page - 1) * limit).limit(limit).collect(Collectors.toList());
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(posts.size()))
-                .body(result);
+                .body(posts.stream().skip((page - 1) * limit).limit(limit).collect(Collectors.toList()));
     }
 
+//    @GetMapping("/posts/{id}")
+//    public ResponseEntity<Optional<Post>> getPost(@PathVariable String id) {
+//        var findedPost = posts.stream().filter(f -> f.getId().equals(id)).findFirst();
+//        if (findedPost.isPresent()) {
+//            return ResponseEntity.ok(findedPost);
+//        } else {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//    }
+
     @GetMapping("/posts/{id}")
-    public ResponseEntity<Optional<Post>> getPost(@PathVariable String id) {
+    public ResponseEntity<Post> getPost(@PathVariable String id) {
         var findedPost = posts.stream().filter(f -> f.getId().equals(id)).findFirst();
-        if (findedPost.isPresent()) {
-            return ResponseEntity.ok(findedPost);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return ResponseEntity.of(findedPost);
     }
 
     @PostMapping("/posts")
@@ -63,18 +69,15 @@ public class Application {
     @PutMapping("/posts/{id}")
     public ResponseEntity<Post> updatePost(@PathVariable String id, @RequestBody Post post) {
         var findedPost = posts.stream().filter(p -> p.getId().equals(id)).findFirst();
+        var status = HttpStatus.NO_CONTENT;
         if (findedPost.isPresent()) {
             Post updatedPost = findedPost.get();
             updatedPost.setId(post.getId());
             updatedPost.setTitle(post.getTitle());
             updatedPost.setBody(post.getBody());
-            return ResponseEntity
-                    .ok()
-                    .body(post);
+            status = HttpStatus.OK;
         }
-        return ResponseEntity
-                .status(HttpStatusCode.valueOf(204))
-                .body(post);
+        return ResponseEntity.status(status).body(post);
     }
     // END
 
