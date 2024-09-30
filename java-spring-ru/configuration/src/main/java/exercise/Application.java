@@ -2,7 +2,6 @@ package exercise;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,20 +28,15 @@ public class Application {
 
     @GetMapping("/admins")
     @ResponseStatus(HttpStatus.OK)
-    public List<String> indexAdmins() {
+    public List<String> getAdmins() {
 
         List<String> adminMails = defaultAdmins.getAdmins();
-        List<String> adminNames = new java.util.ArrayList<>(List.of());
-        for (String mail : adminMails) {
-            for (User user : users) {
-                if (user.getEmail().equals(mail)) {
-                    adminNames.add(user.getName());
-                    break;
-                }
-            }
-        }
 
-        return adminNames.stream().sorted().collect(Collectors.toList());
+        return users.stream()
+                .filter(u -> adminMails.contains(u.getEmail()))
+                .map(u -> u.getName())
+                .sorted()
+                .toList();
     }
     // END
 
