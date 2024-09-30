@@ -2,8 +2,11 @@
 
 # BEGIN
 spring:
-  data:
-    jpa:
-      repositories:
-        bootstrap-mode: default
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  output:
+    ansi:
+      enabled: always
 # END

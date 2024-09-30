@@ -16,9 +16,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Person {
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
+
     private String firstName;
     private String lastName;
 }
