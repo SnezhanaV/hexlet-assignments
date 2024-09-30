@@ -38,18 +38,22 @@ public class ProductsController {
 
     // BEGIN
     @GetMapping(path = "/{id}")
-    public Product indexProduct(@PathVariable Long id) {
+    public Product show(@PathVariable Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
     }
 
     @PutMapping(path = "/{id}")
-    public Product publish(@PathVariable Long id, @RequestBody Product product) {
-        Product oldProduct = productRepository.findById(id)
+    public Product update(@PathVariable Long id, @RequestBody Product productData) {
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
-        oldProduct.setTitle(product.getTitle());
-        oldProduct.setPrice(product.getPrice());
-        return productRepository.save(oldProduct);
+
+        product.setTitle(productData.getTitle());
+        product.setPrice(productData.getPrice());
+
+        productRepository.save(product);
+
+        return product;
     }
     // END
 
