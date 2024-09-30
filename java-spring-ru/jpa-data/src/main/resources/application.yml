@@ -1,0 +1,9 @@
+---
+
+# BEGIN
+spring:
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: default
+# END
