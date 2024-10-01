@@ -19,10 +19,9 @@ import java.time.LocalDate;
 // BEGIN
 @Entity
 @Table(name = "task")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(of = {"id"})
 public class Task {
 
     @Id

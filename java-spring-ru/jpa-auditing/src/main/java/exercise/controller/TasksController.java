@@ -40,19 +40,23 @@ public class TasksController {
     }
 
     // BEGIN
-    @PostMapping()
+    @PostMapping(path = "")
     @ResponseStatus(HttpStatus.CREATED)
     public Task create(@RequestBody Task task) {
         return taskRepository.save(task);
     }
 
     @PutMapping(path = "/{id}")
-    public Task update(@PathVariable Long id, @RequestBody Task data) {
+    public Task update(@PathVariable Long id, @RequestBody Task taskData) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id " + id + " not found"));
-        task.setTitle(data.getTitle());
-        task.setDescription(data.getDescription());
-        return taskRepository.save(task);
+
+        task.setTitle(taskData.getTitle());
+        task.setDescription(taskData.getDescription());
+
+        taskRepository.save(task);
+
+        return task;
     }
     // END
 
