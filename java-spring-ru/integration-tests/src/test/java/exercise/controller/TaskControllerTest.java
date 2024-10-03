@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.assertj.core.api.Fail.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -70,13 +69,17 @@ class ApplicationTest {
 
 
     // BEGIN
+    private Task generateTask() {
+        return Instancio.of(Task.class)
+                .ignore(Select.field(Task::getId))
+                .supply(Select.field(Task::getTitle), () -> faker.lorem().word())
+                .supply(Select.field(Task::getDescription), () -> faker.lorem().paragraph())
+                .create();
+    }
+
     @Test
     public void testShow() throws Exception {
-        var task = Instancio.of(Task.class)
-                .ignore(Select.field(Task::getId))
-                .ignore(Select.field(Task::getCreatedAt))
-                .ignore(Select.field(Task::getUpdatedAt))
-                .create();
+        var task = generateTask();
 
         taskRepository.save(task);
 
@@ -96,15 +99,7 @@ class ApplicationTest {
 
     @Test
     public void testCreate() throws Exception {
-        var task = Instancio.of(Task.class)
-                .ignore(Select.field(Task::getId))
-                .ignore(Select.field(Task::getCreatedAt))
-                .ignore(Select.field(Task::getUpdatedAt))
-                .create();
-
-        var data = new HashMap<>();
-        data.put("title", task.getTitle());
-        data.put("description", task.getDescription());
+        var data = generateTask();
 
         var request = post("/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,18 +107,14 @@ class ApplicationTest {
 
         mockMvc.perform(request).andExpect(status().isCreated());
 
-        Task foundedTask = taskRepository.findByTitle(task.getTitle())
-                .orElseThrow(() -> new ResourceNotFoundException("Task with title " + task.getTitle() + " not found"));
-        assertThat(foundedTask.getDescription()).isEqualTo(task.getDescription());
+        var task = taskRepository.findByTitle(data.getTitle()).get();
+        assertThat(task).isNotNull();
+        assertThat(task.getDescription()).isEqualTo(data.getDescription());
     }
 
     @Test
     public void testUpdate() throws Exception {
-        var task = Instancio.of(Task.class)
-                .ignore(Select.field(Task::getId))
-                .ignore(Select.field(Task::getCreatedAt))
-                .ignore(Select.field(Task::getUpdatedAt))
-                .create();
+        var task = generateTask();
 
         taskRepository.save(task);
 
@@ -139,29 +130,23 @@ class ApplicationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Task foundedTask = taskRepository.findByTitle(newTitle)
-                .orElseThrow(() -> new ResourceNotFoundException("Task with title " + newTitle + " not found"));
+        Task foundedTask = taskRepository.findById(task.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Task with id " + task.getId() + " not found"));
 
         assertThat(foundedTask.getTitle()).isEqualTo(newTitle);
     }
 
     @Test
     public void testDelete() throws Exception {
-        var task = Instancio.of(Task.class)
-                .ignore(Select.field(Task::getId))
-                .ignore(Select.field(Task::getCreatedAt))
-                .ignore(Select.field(Task::getUpdatedAt))
-                .create();
+        var task = generateTask();
 
         taskRepository.save(task);
 
-        mockMvc.perform(delete("/tasks/" + task.getId()))
+        mockMvc.perform(delete("/tasks/{id}", task.getId()))
                 .andExpect(status().isOk());
 
-        var found = taskRepository.findByTitle(task.getTitle());
-        if (found.isPresent()) {
-            fail("Task with title " + task.getTitle() + " is not deleted!");
-        }
+        var found = taskRepository.findByTitle(task.getTitle()).orElse(null);
+        assertThat(found).isNull();
     }
     // END
 }
