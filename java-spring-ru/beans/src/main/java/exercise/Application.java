@@ -8,11 +8,10 @@ import java.time.LocalDateTime;
 import exercise.daytime.Daytime;
 import exercise.daytime.Day;
 import exercise.daytime.Night;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 // BEGIN
-@Configuration
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.context.annotation.RequestScope;
 // END
 
 @SpringBootApplication
@@ -24,6 +23,7 @@ public class Application {
 
     // BEGIN
     @Bean
+    @RequestScope
     public Daytime getDaytime() {
         int hour = LocalDateTime.now().getHour();
 
