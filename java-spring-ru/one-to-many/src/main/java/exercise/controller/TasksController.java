@@ -44,6 +44,20 @@ public class TasksController {
                 .toList();
     }
 
+    @PostMapping(path = "")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TaskDTO create(@Valid @RequestBody TaskCreateDTO taskData) {
+        var task = taskMapper.map(taskData);
+        var user = userRepository.findById(taskData.getAssigneeId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User with id " + taskData.getAssigneeId() + " not found"));
+
+        task.setAssignee(user);
+        taskRepository.save(task);
+
+        return taskMapper.map(task);
+    }
+
     @GetMapping(path = "/{id}")
     public TaskDTO show(@PathVariable long id) {
 
@@ -52,32 +66,17 @@ public class TasksController {
         return taskMapper.map(task);
     }
 
-    @PostMapping(path = "")
-    @ResponseStatus(HttpStatus.CREATED)
-    public TaskDTO create(@Valid @RequestBody TaskCreateDTO taskData) {
-        var task = taskMapper.map(taskData);
-        var user = userRepository.findById(taskData.getAssigneeId()).get();
-        task.setAssignee(user);
-        taskRepository.save(task);
-
-        user.addTask(task);
-        userRepository.save(user);
-
-        return taskMapper.map(task);
-    }
-
     @PutMapping(path = "/{id}")
     public TaskDTO update(@Valid @RequestBody TaskUpdateDTO taskData, @PathVariable Long id) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id " + id + " not found"));
+        var user = userRepository.findById(taskData.getAssigneeId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User with id " + taskData.getAssigneeId() + " not found"));
 
         taskMapper.update(taskData, task);
-        var user = userRepository.findById(taskData.getAssigneeId()).get();
         task.setAssignee(user);
         taskRepository.save(task);
-
-        user.addTask(task);
-        userRepository.save(user);
 
         return taskMapper.map(task);
     }
@@ -85,14 +84,7 @@ public class TasksController {
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        var task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task with id " + id + " not found"));
-        var user = userRepository.findById(task.getAssignee().getId()).get();
-
         taskRepository.deleteById(id);
-
-        user.removeTask(task);
-        userRepository.save(user);
     }
     // END
 }
