@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AuthorService {
@@ -28,10 +27,10 @@ public class AuthorService {
                 .toList();
     }
 
-    public Optional<AuthorDTO> findById(long id) {
-        var author =  authorRepository.findById(id)
+    public AuthorDTO findById(long id) {
+        var author = authorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Author with id " + id + " not found"));
-        return Optional.ofNullable(authorMapper.map(author));
+        return authorMapper.map(author);
     }
 
     public AuthorDTO create(AuthorCreateDTO authorData) {
@@ -40,12 +39,12 @@ public class AuthorService {
         return authorMapper.map(author);
     }
 
-    public Optional<AuthorDTO> update(AuthorUpdateDTO authorData, Long id) {
+    public AuthorDTO update(AuthorUpdateDTO authorData, Long id) {
         var author = authorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not Found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Author not Found: " + id));
         authorMapper.update(authorData, author);
         authorRepository.save(author);
-        return Optional.ofNullable(authorMapper.map(author));
+        return authorMapper.map(author);
     }
 
     public void delete(Long id) {

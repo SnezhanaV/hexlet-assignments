@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookService {
@@ -35,18 +34,18 @@ public class BookService {
         return bookMapper.map(book);
     }
 
-    public Optional<BookDTO> findById(Long id) {
+    public BookDTO findById(Long id) {
         var book = bookRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not Found: " + id));
-        return Optional.ofNullable(bookMapper.map(book));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not Found: " + id));
+        return bookMapper.map(book);
     }
 
-    public Optional<BookDTO> update(BookUpdateDTO bookData, Long id) {
+    public BookDTO update(BookUpdateDTO bookData, Long id) {
         var book = bookRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not Found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not Found: " + id));
         bookMapper.update(bookData, book);
         bookRepository.save(book);
-        return Optional.ofNullable(bookMapper.map(book));
+        return bookMapper.map(book);
     }
 
     public void delete(Long id) {
